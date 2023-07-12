@@ -1,54 +1,49 @@
 import React, { useEffect, useState } from 'react';
-import { Col, Row, Input, Space, Table, message } from 'antd';
+import { Space, Table, message } from 'antd';
 import { ColumnGroupType, ColumnType } from 'antd/es/table';
 
 import { MasterService } from '@/services';
-import { useDatatable, useDebounce, useEffectOnce } from '@/hooks';
+import { useDatatable, useEffectOnce } from '@/hooks';
 
-type DataProps<TData> = {
+type DataProps = {
 	baseUrl?: string;
-	data?: TData[];
 	dataKey?: string;
 	dataSourceUrl?: string;
 };
 
-type SearchProps = {
-	searchPlaceholder?: string;
-	withSearch?: boolean;
-};
-
-type DatatableProps<TData> = {
+type DatatableProps = {
 	columns: (ColumnGroupType<any> | ColumnType<any>)[];
-} & DataProps<TData> &
-	SearchProps;
+} & DataProps;
 
 const Datatable = <TData,>({
 	baseUrl,
 	columns,
 	dataSourceUrl,
 	dataKey,
-	data: defaultData = [],
-	searchPlaceholder = 'Search...',
-	withSearch,
-}: DatatableProps<TData>) => {
-	const { limit, skip, isError, total, setTotal, setLimit, setSkip } =
-		useDatatable();
+}: DatatableProps) => {
+	const {
+		limit,
+		skip,
+		isError,
+		total,
+		search,
+		data,
+		setData,
+		setTotal,
+		setLimit,
+		setSkip,
+	} = useDatatable();
 
-	const [data, setData] = useState<TData[]>([] as TData[]);
 	const [loading, setLoading] = useState<boolean>(true);
-
-	const [keyword, setKeyword] = useState('');
-	const q = useDebounce<string>(keyword, 500);
 
 	const getData = async () => {
 		try {
 			const service = new MasterService(baseUrl);
 
-			const isSearching = q !== '';
 			const response = await service.getMasterData<Record<any, TData[]>>(
-				dataSourceUrl! + (isSearching ? '/search' : ''),
+				dataSourceUrl!,
 				{
-					q,
+					q: search,
 					skip,
 					limit,
 				}
@@ -77,25 +72,12 @@ const Datatable = <TData,>({
 		if (dataSourceUrl) {
 			getData();
 		} else {
-			setData(defaultData);
+			setLoading(false);
 		}
-	}, [limit, skip, q]);
+	}, [limit, skip, search]);
 
 	return (
 		<Space direction="vertical" style={{ width: '100%' }} size="middle">
-			{withSearch && (
-				<Row justify="end">
-					<Col>
-						<Input.Search
-							onChange={(e) => setKeyword(e.target.value)}
-							placeholder={searchPlaceholder}
-							size="large"
-							style={{ width: 250 }}
-						/>
-					</Col>
-				</Row>
-			)}
-
 			<Table
 				columns={columns}
 				dataSource={data}
@@ -104,6 +86,7 @@ const Datatable = <TData,>({
 				pagination={{
 					pageSize: limit,
 					total,
+					pageSizeOptions: [5, 10, 15, 20, 30, 50, 100],
 					onChange: (page, pageSize) => {
 						setSkip((page - 1) * page);
 						setLimit(pageSize);
