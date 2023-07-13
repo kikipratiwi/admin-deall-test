@@ -12,4 +12,14 @@ export default class ProductService extends HTTPAdapterService {
 			throw new Error(error);
 		}
 	}
+
+	public async getProductCategories(): Promise<string[]> {
+		try {
+			const { data } = await this.sendGetRequest(`/products/categories`);
+
+			return data;
+		} catch (error: any) {
+			throw new Error(error);
+		}
+	}
 }

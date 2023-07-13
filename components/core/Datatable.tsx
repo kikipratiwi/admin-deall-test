@@ -75,7 +75,7 @@ const Datatable = <TData,>({
 		} else {
 			setLoading(false);
 		}
-	}, [limit, skip, search]);
+	}, [dataSourceUrl, limit, skip, search]);
 
 	return (
 		<Space direction="vertical" style={{ width: '100%' }} size="middle">

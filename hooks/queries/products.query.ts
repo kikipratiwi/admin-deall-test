@@ -1,5 +1,5 @@
 import { Product, QueryOpts } from '@/interfaces';
-import { MasterService } from '@/services';
+import { MasterService, ProductService } from '@/services';
 import { generateQueryOptions } from '@/utils';
 import { useQuery } from 'react-query';
 
@@ -28,8 +28,21 @@ export const useGetProducts = ({
 	>(
 		[PRODUCT_QUERY_KEYS, { ...params }],
 		async () => {
-			const service = new MasterService();
-			const response = await service.getMasterData('/products');
+			const svc = new MasterService();
+			const response = await svc.getMasterData('/products');
+
+			return response;
+		},
+		generateQueryOptions(options)
+	);
+};
+
+export const useGetProductCategories = (options?: QueryOpts<string[]>) => {
+	return useQuery<string[], Error>(
+		[PRODUCT_QUERY_KEYS, 'categories'],
+		async () => {
+			const svc = new ProductService();
+			const response = await svc.getProductCategories();
 
 			return response;
 		},

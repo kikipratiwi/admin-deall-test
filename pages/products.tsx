@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ColumnsType } from 'antd/es/table';
 import { FilterOutline } from 'react-ionicons';
+import { useAtom } from 'jotai';
 import {
 	Space,
 	Row,
@@ -12,47 +13,48 @@ import {
 	Typography,
 	Slider,
 	message,
+	Badge,
+	Select,
 } from 'antd';
 
 import { Datatable, MainLayout } from '@/components';
 import { DatatableProvider } from '@/context';
 import { Product } from '@/interfaces';
+import { productFilterAtom } from '@/stores';
 import {
 	useDatatable,
 	useDebounce,
+	useGetProductCategories,
 	useGetProducts,
 	useUpdateEffect,
 } from '@/hooks';
 
 const ProductPage = () => {
+	const { data: categories } = useGetProductCategories();
 	const { refetch } = useGetProducts({
 		params: { limit: 100, skip: 0 },
 		options: { enabled: false },
 	});
 
-	const {
-		search,
-		setFilter,
-		setSearch,
-		setTotal,
-		setLimit,
-		setSkip,
-		setData,
-	} = useDatatable();
+	const { search, setSearch, setTotal, setData } = useDatatable();
 	const [form] = Form.useForm<{
 		brand?: string;
 		category?: string;
 		range?: number[];
 	}>();
 
-	const [clientSideFiltering, setClientSideFilter] = useState(false);
+	const [filter, setFilter] = useAtom(productFilterAtom);
 	const [modalOpen, setModalOpen] = useState<boolean>(false);
 	const [priceRange, setPriceRange] = useState<number[]>([1, 2000]);
+	const [clientSideFiltering, setClientSideFilter] = useState(true);
 
 	const [keyword, setKeyword] = useState('');
 	const debouncedKeyword = useDebounce<string>(keyword, 500);
 
 	const isSearching = search !== '';
+	const filterLength = Object.values(filter).filter(
+		(val) => typeof val !== 'undefined'
+	).length;
 	const columns: ColumnsType<Product> = [
 		{
 			title: 'Product Name',
@@ -83,9 +85,7 @@ const ProductPage = () => {
 	];
 
 	const applyFilter = async () => {
-		const values = form.getFieldsValue();
 		setClientSideFilter(true);
-		setFilter(values);
 
 		const { data, isError, error } = await refetch();
 
@@ -96,7 +96,7 @@ const ProductPage = () => {
 
 		const filteredData = data!.products.filter((product: any) => {
 			return (
-				Object.entries({ ...values, title: debouncedKeyword })
+				Object.entries({ ...filter, title: debouncedKeyword })
 					// eslint-disable-next-line no-unused-vars
 					.filter(([_, value]) => {
 						return typeof value !== 'undefined';
@@ -131,6 +131,14 @@ const ProductPage = () => {
 	};
 
 	useUpdateEffect(() => {
+		if (filterLength > 0) {
+			applyFilter();
+		} else {
+			setClientSideFilter(false);
+		}
+	}, [filter]);
+
+	useUpdateEffect(() => {
 		setSearch(debouncedKeyword);
 
 		if (clientSideFiltering) {
@@ -144,10 +152,12 @@ const ProductPage = () => {
 				<Row justify="end">
 					<Col>
 						<Space size="large">
-							<FilterOutline
-								style={{ cursor: 'pointer' }}
-								onClick={() => setModalOpen(true)}
-							/>
+							<Badge count={filterLength}>
+								<FilterOutline
+									style={{ cursor: 'pointer' }}
+									onClick={() => setModalOpen(true)}
+								/>
+							</Badge>
 
 							<Input.Search
 								onChange={(e) => setKeyword(e.target.value)}
@@ -191,10 +201,7 @@ const ProductPage = () => {
 						key="reset"
 						onClick={() => {
 							form.resetFields();
-							setClientSideFilter(false);
 							setFilter({});
-							setLimit(8);
-							setSkip(0);
 							setModalOpen(false);
 						}}
 					>
@@ -204,8 +211,9 @@ const ProductPage = () => {
 						key="link"
 						style={{ background: 'black' }}
 						type="primary"
-						onClick={async () => {
-							await applyFilter();
+						onClick={() => {
+							const values = form.getFieldsValue();
+							setFilter(values);
 							setModalOpen(false);
 						}}
 					>
@@ -213,7 +221,7 @@ const ProductPage = () => {
 					</Button>,
 				]}
 			>
-				<Form initialValues={{ range: [0, 1000] }} form={form}>
+				<Form initialValues={filter} form={form}>
 					<Row gutter={[12, 12]}>
 						<Col xs={24} lg={12}>
 							<Form.Item name="brand">
@@ -223,7 +231,17 @@ const ProductPage = () => {
 
 						<Col xs={24} lg={12}>
 							<Form.Item name="category">
-								<Input placeholder="Filter Category..." />
+								<Select
+									placeholder="Filter Category..."
+									allowClear
+									showSearch
+								>
+									{categories?.map((cat) => (
+										<Select.Option value={cat} key={cat}>
+											{cat}
+										</Select.Option>
+									))}
+								</Select>
 							</Form.Item>
 						</Col>
 
