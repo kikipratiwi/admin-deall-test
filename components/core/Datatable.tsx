@@ -36,6 +36,7 @@ const Datatable = <TData,>({
 
 	const [loading, setLoading] = useState<boolean>(true);
 
+	// TODO: Can be enhanced using react-query
 	const getData = async () => {
 		try {
 			const service = new MasterService(baseUrl);

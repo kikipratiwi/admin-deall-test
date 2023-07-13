@@ -17,10 +17,19 @@ import {
 import { Datatable, MainLayout } from '@/components';
 import { DatatableProvider } from '@/context';
 import { Product } from '@/interfaces';
-import { useDatatable, useDebounce, useUpdateEffect } from '@/hooks';
-import { MasterService } from '@/services';
+import {
+	useDatatable,
+	useDebounce,
+	useGetProducts,
+	useUpdateEffect,
+} from '@/hooks';
 
 const ProductPage = () => {
+	const { refetch } = useGetProducts({
+		params: { limit: 100, skip: 0 },
+		options: { enabled: false },
+	});
+
 	const {
 		search,
 		setFilter,
@@ -36,9 +45,9 @@ const ProductPage = () => {
 		range?: number[];
 	}>();
 
-	const [isFiltering, setIsFiltering] = useState(false);
+	const [clientSideFiltering, setClientSideFilter] = useState(false);
 	const [modalOpen, setModalOpen] = useState<boolean>(false);
-	const [priceRange, setPriceRange] = useState<number[]>([0, 2000]);
+	const [priceRange, setPriceRange] = useState<number[]>([1, 2000]);
 
 	const [keyword, setKeyword] = useState('');
 	const debouncedKeyword = useDebounce<string>(keyword, 500);
@@ -75,22 +84,34 @@ const ProductPage = () => {
 
 	const applyFilter = async () => {
 		const values = form.getFieldsValue();
-		setIsFiltering(true);
+		setClientSideFilter(true);
 		setFilter(values);
 
-		const response = await getProducts();
-		const filteredData = response!.products.filter((product: any) => {
+		const { data, isError, error } = await refetch();
+
+		if (isError) {
+			message.error(error.message);
+			return;
+		}
+
+		const filteredData = data!.products.filter((product: any) => {
 			return (
-				Object.entries(values)
+				Object.entries({ ...values, title: debouncedKeyword })
 					// eslint-disable-next-line no-unused-vars
-					.filter(([_, value]) => typeof value !== 'undefined')
+					.filter(([_, value]) => {
+						return typeof value !== 'undefined';
+					})
 					.every(([key, value]) => {
 						let pass = false;
 
-						if (key === 'brand' || key === 'category') {
+						if (
+							key === 'brand' ||
+							key === 'category' ||
+							key === 'title'
+						) {
 							pass = product[key]
 								.toLowerCase()
-								.includes((value as string).toLowerCase());
+								.includes((value as string)?.toLowerCase());
 						}
 
 						if (key === 'range') {
@@ -109,26 +130,12 @@ const ProductPage = () => {
 		setTotal(filteredData.length);
 	};
 
-	const getProducts = async () => {
-		try {
-			const service = new MasterService();
-
-			const response = await service.getMasterData<Record<string, any>>(
-				'/products',
-				{
-					skip: 0,
-					limit: 100,
-				}
-			);
-
-			return response;
-		} catch (error: any) {
-			message.error(error.message);
-		}
-	};
-
 	useUpdateEffect(() => {
 		setSearch(debouncedKeyword);
+
+		if (clientSideFiltering) {
+			applyFilter();
+		}
 	}, [debouncedKeyword]);
 
 	return (
@@ -155,8 +162,12 @@ const ProductPage = () => {
 				<Datatable<Product[]>
 					columns={columns}
 					dataKey="products"
+					// When there is a filter, data fetching will be done outside the Datatable component
+					// in order to be able to get all data, and filtering based on value we choose. Since it is
+					// not possible to send the params to the API. The workaround is get all data first, and then filter it.
+					// Hence, will be send undefined on dataSourceUrl when filtering is on
 					dataSourceUrl={
-						isFiltering
+						clientSideFiltering
 							? undefined
 							: '/products' + (isSearching ? '/search' : '')
 					}
@@ -180,7 +191,7 @@ const ProductPage = () => {
 						key="reset"
 						onClick={() => {
 							form.resetFields();
-							setIsFiltering(false);
+							setClientSideFilter(false);
 							setFilter({});
 							setLimit(8);
 							setSkip(0);

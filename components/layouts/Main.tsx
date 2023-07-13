@@ -15,15 +15,17 @@ const MainLayout = ({ children, title }: MainLayoutProps) => {
 	const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
 
 	return (
-		<Row gutter={12} style={{ width: '100vw' }}>
+		<Row
+			gutter={12}
+			style={{ width: '99vw', height: '100vh', overflowX: 'hidden' }}
+		>
 			<Col
 				xs={0}
 				md={8}
 				lg={5}
 				style={{
 					background: black,
-					height: '100vh',
-					overflow: 'hidden',
+					height: '100%',
 				}}
 			>
 				<Space
@@ -64,8 +66,9 @@ const MainLayout = ({ children, title }: MainLayoutProps) => {
 				lg={19}
 				style={{
 					background: white,
-					height: '100vh',
+					height: '100%',
 					overflow: 'auto',
+					overflowX: 'hidden',
 					padding: '2rem 3rem',
 				}}
 			>
