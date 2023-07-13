@@ -6,3 +6,4 @@ export { useIsFirstRender } from './useIsFirstRender';
 export { useUpdateEffect } from './useUpdateEffect';
 
 export * from './queries/products.query';
+export * from './queries/cart.query';

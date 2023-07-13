@@ -34,7 +34,7 @@ const MainLayout = ({ children, title }: MainLayoutProps) => {
 					style={{ width: '100%', padding: '2rem 0' }}
 				>
 					{SIDEBAR_MENUS.map((menu) => {
-						const isMenuActive = menu.url.includes(pathname);
+						const isMenuActive = pathname.includes(menu.url);
 
 						return (
 							<a

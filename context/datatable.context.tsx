@@ -1,4 +1,3 @@
-import { useUpdateEffect } from '@/hooks';
 import React, { ReactNode, createContext, useMemo, useState } from 'react';
 
 const DEFAULT_LIMIT_VALUE = 8;
@@ -50,10 +49,6 @@ const DatatableProvider = ({ children }: { children: ReactNode }) => {
 			setTotal,
 		};
 	}, [data, limit, skip, filter, total, search]);
-
-	useUpdateEffect(() => {
-		// TODO: Should save values to localStorage using jotai
-	}, [limit, skip, filter, total, search]);
 
 	return (
 		<DatatableContext.Provider value={values}>
