@@ -1,7 +1,18 @@
 import React, { useState } from 'react';
 import { ColumnsType } from 'antd/es/table';
-import { FilterOutline } from 'react-ionicons';
+import { FilterOutline, PieChart } from 'react-ionicons';
 import { useAtom } from 'jotai';
+import { Line } from 'react-chartjs-2';
+import {
+	Chart as ChartJS,
+	CategoryScale,
+	LinearScale,
+	PointElement,
+	LineElement,
+	Title,
+	Tooltip,
+	Legend,
+} from 'chart.js';
 import {
 	Space,
 	Row,
@@ -29,6 +40,16 @@ import {
 	useUpdateEffect,
 } from '@/hooks';
 
+ChartJS.register(
+	CategoryScale,
+	LinearScale,
+	PointElement,
+	LineElement,
+	Title,
+	Tooltip,
+	Legend
+);
+
 const ProductPage = () => {
 	const { data: categories } = useGetProductCategories();
 	const { refetch } = useGetProducts({
@@ -36,7 +57,7 @@ const ProductPage = () => {
 		options: { enabled: false },
 	});
 
-	const { search, setSearch, setTotal, setData } = useDatatable();
+	const { data, search, setSearch, setTotal, setData } = useDatatable();
 	const [form] = Form.useForm<{
 		brand?: string;
 		category?: string;
@@ -44,9 +65,10 @@ const ProductPage = () => {
 	}>();
 
 	const [filter, setFilter] = useAtom(productFilterAtom);
-	const [modalOpen, setModalOpen] = useState<boolean>(false);
 	const [priceRange, setPriceRange] = useState<number[]>([1, 2000]);
 	const [clientSideFiltering, setClientSideFilter] = useState(true);
+	const [filterModalOpen, setFilterModalOpen] = useState<boolean>(false);
+	const [chartModalOpen, setChartModalOpen] = useState<boolean>(false);
 
 	const [keyword, setKeyword] = useState('');
 	const debouncedKeyword = useDebounce<string>(keyword, 500);
@@ -152,10 +174,15 @@ const ProductPage = () => {
 				<Row justify="end">
 					<Col>
 						<Space size="large">
+							<PieChart
+								style={{ cursor: 'pointer' }}
+								onClick={() => setChartModalOpen(true)}
+							/>
+
 							<Badge count={filterLength}>
 								<FilterOutline
 									style={{ cursor: 'pointer' }}
-									onClick={() => setModalOpen(true)}
+									onClick={() => setFilterModalOpen(true)}
 								/>
 							</Badge>
 
@@ -185,15 +212,58 @@ const ProductPage = () => {
 			</Space>
 
 			<Modal
-				open={modalOpen}
-				title="Filter Products"
+				open={chartModalOpen}
+				title="Product Chart"
 				width="80%"
-				onCancel={() => setModalOpen(false)}
+				onCancel={() => setChartModalOpen(false)}
 				footer={[
 					<Button
 						key="back"
 						type="text"
-						onClick={() => setModalOpen(false)}
+						onClick={() => setChartModalOpen(false)}
+					>
+						Close
+					</Button>,
+				]}
+			>
+				<Line
+					data={{
+						labels: data.map((product) => product.title),
+						datasets: [
+							{
+								label: 'Number of Items',
+								data: data.map((product) => product.stock),
+								backgroundColor: 'rgba(75, 192, 192, 0.6)',
+								borderColor: 'rgba(75, 192, 192, 1)',
+								borderWidth: 1,
+							},
+						],
+					}}
+					options={{
+						responsive: true,
+						plugins: {
+							legend: {
+								position: 'top' as const,
+							},
+							title: {
+								display: true,
+								text: 'No of Items per Product',
+							},
+						},
+					}}
+				/>
+			</Modal>
+
+			<Modal
+				open={filterModalOpen}
+				title="Filter Products"
+				width="80%"
+				onCancel={() => setFilterModalOpen(false)}
+				footer={[
+					<Button
+						key="back"
+						type="text"
+						onClick={() => setFilterModalOpen(false)}
 					>
 						Close
 					</Button>,
@@ -202,7 +272,7 @@ const ProductPage = () => {
 						onClick={() => {
 							form.resetFields();
 							setFilter({});
-							setModalOpen(false);
+							setFilterModalOpen(false);
 						}}
 					>
 						Reset
@@ -214,7 +284,7 @@ const ProductPage = () => {
 						onClick={() => {
 							const values = form.getFieldsValue();
 							setFilter(values);
-							setModalOpen(false);
+							setFilterModalOpen(false);
 						}}
 					>
 						Filter
