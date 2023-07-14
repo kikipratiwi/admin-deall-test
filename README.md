@@ -6,7 +6,7 @@ This project is a [Next.js](https://nextjs.org/) application built for the inter
 
 ## Live Preview
 
-To See the live version of the app, you can visit [Live App](https://admin-deall-test.vercel.app/products)
+To See the live version of the app, you can visit [Live App](https://admin-deall-test.vercel.app)
 
 ## Installation and Running the Project
 
