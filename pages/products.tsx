@@ -31,7 +31,7 @@ import {
 import { Datatable, MainLayout } from '@/components';
 import { DatatableProvider } from '@/context';
 import { Product } from '@/interfaces';
-import { productFilterAtom } from '@/stores';
+import { productFilterAtom, productSearchAtom } from '@/stores';
 import {
 	useDatatable,
 	useDebounce,
@@ -70,7 +70,7 @@ const ProductPage = () => {
 	const [filterModalOpen, setFilterModalOpen] = useState<boolean>(false);
 	const [chartModalOpen, setChartModalOpen] = useState<boolean>(false);
 
-	const [keyword, setKeyword] = useState('');
+	const [keyword, setKeyword] = useAtom(productSearchAtom);
 	const debouncedKeyword = useDebounce<string>(keyword, 500);
 
 	const isSearching = search !== '';
@@ -191,6 +191,7 @@ const ProductPage = () => {
 								placeholder="Search Products..."
 								size="large"
 								style={{ width: 250 }}
+								value={keyword ?? keyword}
 							/>
 						</Space>
 					</Col>
