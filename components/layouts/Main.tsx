@@ -17,13 +17,21 @@ const MainLayout = ({ children, title }: MainLayoutProps) => {
 	return (
 		<Row
 			gutter={12}
-			style={{ width: '99vw', height: '100vh', overflowX: 'hidden' }}
+			style={{
+				width: '99vw',
+				height: '100vh',
+				overflowX: 'hidden',
+				margin: 0,
+			}}
 		>
 			<Col
 				xs={0}
 				md={8}
-				lg={5}
+				lg={8}
+				xl={5}
+				xxl={4}
 				style={{
+					maxWidth: '285px',
 					background: black,
 					height: '100%',
 				}}
@@ -62,8 +70,11 @@ const MainLayout = ({ children, title }: MainLayoutProps) => {
 
 			<Col
 				xs={24}
+				sm={24}
 				md={16}
-				lg={19}
+				lg={16}
+				xl={19}
+				xxl={20}
 				style={{
 					background: white,
 					height: '100%',
