@@ -65,18 +65,22 @@ const ProductPage = () => {
 	}>();
 
 	const [filter, setFilter] = useAtom(productFilterAtom);
+	const filterLength = Object.values(filter).filter(
+		(val) => typeof val !== 'undefined'
+	).length;
+
 	const [priceRange, setPriceRange] = useState<number[]>([1, 2000]);
-	const [clientSideFiltering, setClientSideFilter] = useState(true);
 	const [filterModalOpen, setFilterModalOpen] = useState<boolean>(false);
 	const [chartModalOpen, setChartModalOpen] = useState<boolean>(false);
+	const [clientSideFiltering, setClientSideFilter] = useState(
+		filterLength > 0
+	);
 
 	const [keyword, setKeyword] = useAtom(productSearchAtom);
 	const debouncedKeyword = useDebounce<string>(keyword, 500);
 
 	const isSearching = search !== '';
-	const filterLength = Object.values(filter).filter(
-		(val) => typeof val !== 'undefined'
-	).length;
+
 	const columns: ColumnsType<Product> = [
 		{
 			title: 'Product Name',
