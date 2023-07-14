@@ -323,28 +323,33 @@ const ProductPage = () => {
 							>
 								<Typography>Price:</Typography>
 
-								<Space style={{ width: '100%' }} align="center">
-									<Input
-										value={priceRange[0]}
-										style={{ maxWidth: 70 }}
-									/>
-
-									<Form.Item name="range" noStyle>
-										<Slider
-											style={{ width: 400 }}
-											min={1}
-											max={2000}
-											range
-											step={1}
-											onChange={setPriceRange}
+								<Row gutter={[16, 4]}>
+									<Col xs={24} lg={4}>
+										<Input
+											value={priceRange[0]}
+											style={{ maxWidth: 70 }}
 										/>
-									</Form.Item>
+									</Col>
 
-									<Input
-										value={priceRange[1]}
-										style={{ maxWidth: 70 }}
-									/>
-								</Space>
+									<Col flex="auto">
+										<Form.Item name="range" noStyle>
+											<Slider
+												min={1}
+												max={2000}
+												range
+												step={1}
+												onChange={setPriceRange}
+											/>
+										</Form.Item>
+									</Col>
+
+									<Col xs={24} lg={4}>
+										<Input
+											value={priceRange[1]}
+											style={{ maxWidth: 70 }}
+										/>
+									</Col>
+								</Row>
 							</Space>
 						</Col>
 					</Row>
