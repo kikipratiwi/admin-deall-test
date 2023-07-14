@@ -4,6 +4,10 @@
 
 This project is a [Next.js](https://nextjs.org/) application built for the interview process. It serves as a demonstration of your skills and understanding of web development.
 
+## Live Preview
+
+To See the live version of the app, you can visit [Live App](https://admin-deall-test.vercel.app/products)
+
 ## Installation and Running the Project
 
 To get started with the project, follow these steps:
