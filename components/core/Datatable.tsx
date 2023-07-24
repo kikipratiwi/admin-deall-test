@@ -89,7 +89,7 @@ const Datatable = <TData,>({
 					total,
 					pageSizeOptions: [5, 10, 15, 20, 30, 50, 100],
 					onChange: (page, pageSize) => {
-						setSkip((page - 1) * page);
+						setSkip((page - 1) * limit);
 						setLimit(pageSize);
 					},
 				}}

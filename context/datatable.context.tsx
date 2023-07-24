@@ -1,6 +1,6 @@
 import React, { ReactNode, createContext, useMemo, useState } from 'react';
 
-const DEFAULT_LIMIT_VALUE = 8;
+const DEFAULT_LIMIT_VALUE = 10;
 
 export type DatatableContextProps = {
 	filter: Record<string, any>;
